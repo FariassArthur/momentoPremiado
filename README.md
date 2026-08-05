@@ -1,56 +1,64 @@
-![Thumbnail](https://efficient-sloth-d85.notion.site/image/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2F08f749ff-d06d-49a8-a488-9846e081b224%2F00f71846-986f-4cf7-a556-0c3d1e678326%2FThumbnail.png?table=block&id=224f3a1f-bc5c-4455-a56a-b931bc76988d&spaceId=08f749ff-d06d-49a8-a488-9846e081b224&width=2000&userId=&cache=v2)
+# Netfacil | Sorteador Inteligente
 
-# Sorteador de Números
-
-Este projeto foi proposto pela **Rocketseat**, dentro da formação **Full Stack**, como exercício prático de tudo que vem sendo estudado em HTML, CSS e JavaScript.
-
-Usei como referência o template disponível no Figma:  
-🔗 [Sorteador de Números (Figma Community)](https://www.figma.com/community/file/1397279380752780744)
-
-🏠 Demo hospedado na Vercel:  
-🌐 https://sorteador-de-numeros-xi-hazel.vercel.app
-
----
+Aplicação web para realizar sorteios de clientes a partir de um arquivo CSV, com foco em operação e controle interno da Netfacil. A interface permite importar uma planilha, selecionar clientes de forma aleatória, visualizar o resultado do sorteio e exportar os registros salvos em CSV.
 
 ## ✨ Funcionalidades
 
-- Definição de **quantidade** de números a serem sorteados  
-- Intervalo **mínimo** e **máximo** customizáveis  
-- Opção **“Não repetir número”** para evitar números duplicados 
-- Transição suave entre formulário e tela de resultados  
-- Animação de entrada (pop) para cada número sorteado  
-- Botão **“Sortear novamente”** sem recarregar a página  
-- Layout **responsivo** para desktop e mobile  
+- Importação de arquivos CSV com IDs de clientes
+- Sorteio de uma quantidade definida de clientes
+- Opção de evitar repetição entre sorteios
+- Exibição do resultado com animação visual
+- Registro local dos últimos sorteios no navegador
+- Exportação dos registros para um novo arquivo CSV
+- Tema claro/escuro e painel informativo na interface
 
----
+## 🧩 Como funciona
 
-## 🚀 Tecnologias e Conceitos
+1. Importe um CSV contendo os clientes e seus identificadores.
+2. Informe quantos clientes deseja sortear.
+3. Clique em "Sortear" para gerar o resultado.
+4. Os registros ficam salvos localmente no navegador para consulta posterior.
+5. Use "Exportar CSV" para baixar um arquivo com os sorteios realizados.
 
-- **HTML5 & Semântica**  
-- **CSS3** (Flexbox, Grid, custom properties, transições e animações)  
-- **JavaScript (ES6+)**  
-  - Manipulação de **DOM** e **eventos**  
-  - **Funções**, **loops** e **condicionais**  
-  - Geração de valores aleatórios e tratamento de arrays  
-  - Lógica para evitar números repetidos  
+## 📄 Formato esperado do CSV
 
----
+A aplicação identifica automaticamente colunas com nomes como:
 
-## 📁 Estrutura de Pastas
+- client_id
+- clientid
+- id
+- nome
+- nome_completo
+- contrato
+- id_contrato
 
-```plaintext/
-├─ assets/
-│  ├─ bg.png
-│  └─ icons/
-│     ├─ arrow.svg
-│     ├─ person.svg
-│     ├─ toggle_state_default.svg
-│     └─ toggle_state_active.svg
-├─ styles/
-│  ├─ global.css
-│  ├─ home.css
-│  └─ index.css
-├─ script.js
-├─ index.html
-└─ README.md
+O campo mais importante para o sorteio é o identificador do cliente, geralmente representado por uma coluna como "client_id".
+
+## 🛠️ Tecnologias
+
+- HTML5
+- CSS3
+- JavaScript vanilla
+- LocalStorage para persistência dos registros
+
+## 📁 Estrutura do projeto
+
+```text
+├── assets/
+├── styles/
+│   ├── global.css
+│   ├── home.css
+│   └── index.css
+├── index.html
+├── script.js
+└── README.md
+```
+
+## ▶️ Como executar localmente
+
+Não é necessário instalar dependências. Basta abrir o arquivo [index.html](index.html) em um navegador ou utilizar uma extensão de servidor local, como Live Server.
+
+## 📝 Observação
+
+O projeto foi pensado como uma ferramenta prática para fluxo operacional, com foco em simplicidade, usabilidade e rapidez no processo de sorteio.
 
