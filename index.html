@@ -17,10 +17,13 @@
         <div class="brand-block">
           <img class="brand-logo" src="./assets/netfacil_logo.png" alt="Logo Netfacil" />
           <div class="brand-copy">
-            <p class="eyebrow">Sorteio inteligente</p>
+            <p class="eyebrow">Momento premiado</p>
             <h1>Netfacil</h1>
           </div>
           <div class="header-actions">
+            <button class="tools-toggle" id="btn-tools-toggle" type="button" aria-expanded="false" aria-controls="tools-panel" title="Abrir painel de ações">
+              <span>☰</span>
+            </button>
             <button class="theme-toggle" type="button" aria-label="Alternar tema" title="Alternar tema">
               <span class="theme-toggle__icon">☾</span>
             </button>
@@ -36,12 +39,52 @@
             fluxo profissional para a operação da Netfacil.
           </p>
         </div>
+        <div id="tools-panel" class="tools-panel" hidden>
+          <div class="tools-panel__section">
+            <label class="toggle" for="no-repeat">
+              <input type="checkbox" id="no-repeat" name="no-repeat" checked />
+              <span>Sem repetição</span>
+            </label>
+          </div>
+
+          <div class="tools-panel__section">
+            <div class="tools-actions">
+              <label class="upload-card" for="csv-input">
+                <input id="csv-input" type="file" accept=".csv,text/csv" />
+                <span>Importar CSV</span>
+              </label>
+              <button type="button" id="btn-export-csv" class="btn btn-secondary">Exportar modelo CSV</button>
+            </div>
+            <p id="status-message" class="status-message">Pronto para processar um novo lote.</p>
+          </div>
+
+          <div class="tools-panel__section">
+            <div class="tools-heading">
+              <div>
+                <p class="eyebrow">Histórico</p>
+                <h3>Registros salvos</h3>
+              </div>
+              <button type="button" id="btn-clear-list" class="btn btn-tertiary">Limpar</button>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Qtde.</th>
+                    <th>Origem</th>
+                    <th>Resultado</th>
+                  </tr>
+                </thead>
+                <tbody id="records-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </header>
 
       <section class="panel panel-form">
         <div class="panel-heading">
-          <p class="eyebrow">Configuração</p>
-          <h2>Sortear para um cliente</h2>
+          <h2>Sorteio Fácil</h2>
         </div>
 
         <form id="form-sort" class="form">
@@ -50,28 +93,10 @@
             <input id="amount" name="amount" type="number" min="1" value="5" required />
           </div>
 
-          <p class="helper-text">
-            Os IDs serão extraídos da planilha importada. Cada cliente sorteado é removido da lista para não voltar a aparecer na próxima rodada.
-          </p>
-
-          <label class="toggle" for="no-repeat">
-            <input type="checkbox" id="no-repeat" name="no-repeat" checked />
-            <span>Sem repetição</span>
-          </label>
-
           <div class="actions">
             <button type="submit" class="btn btn-primary">Sortear</button>
-            <button type="button" id="btn-export-csv" class="btn btn-secondary">Exportar CSV</button>
           </div>
         </form>
-
-        <div class="csv-setup">
-          <label class="upload-card" for="csv-input">
-            <input id="csv-input" type="file" accept=".csv,text/csv" />
-            <span>Importar CSV preenchido</span>
-          </label>
-          <p id="status-message" class="status-message">Pronto para processar um novo lote.</p>
-        </div>
       </section>
 
       <section id="result-panel" class="panel panel-result hidden">
@@ -83,27 +108,14 @@
         <div id="result-numbers" class="result-numbers"></div>
       </section>
 
-      <section class="panel panel-records">
-        <div class="panel-heading records-heading">
-          <div>
-            <p class="eyebrow">Controle</p>
-            <h2>Registros salvos</h2>
-          </div>
-          <button type="button" id="btn-clear-list" class="btn btn-tertiary">Limpar</button>
+      <section id="winner-section" class="panel panel-winners hidden" aria-live="polite">
+        <div class="panel-heading">
+          <p class="eyebrow">Premiados</p>
+          <h2>Clientes premiados</h2>
         </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Qtde.</th>
-                <th>Origem</th>
-                <th>Resultado</th>
-              </tr>
-            </thead>
-            <tbody id="records-table-body"></tbody>
-          </table>
-        </div>
+        <div id="winner-list" class="winner-list" aria-live="polite"></div>
       </section>
+
     </main>
 
     <script src="./script.js" defer></script>

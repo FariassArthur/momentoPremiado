@@ -5,6 +5,8 @@ const resultPanel = document.querySelector("#result-panel");
 const resultClientLabel = document.querySelector("#result-client-label");
 const resultSummary = document.querySelector("#result-summary");
 const resultNumbers = document.querySelector("#result-numbers");
+const winnerList = document.querySelector("#winner-list");
+const winnerSection = document.querySelector("#winner-section");
 const statusMessage = document.querySelector("#status-message");
 const exportButton = document.querySelector("#btn-export-csv");
 const csvInput = document.querySelector("#csv-input");
@@ -12,14 +14,18 @@ const clearButton = document.querySelector("#btn-clear-list");
 const recordsTableBody = document.querySelector("#records-table-body");
 const infoToggle = document.querySelector(".info-toggle");
 const heroInfo = document.querySelector("#hero-info");
+const toolsToggle = document.querySelector("#btn-tools-toggle");
+const toolsPanel = document.querySelector("#tools-panel");
 
 const STORAGE_KEY = "netfacil-sorter-records";
 const root = document.documentElement;
 const themeToggle = document.querySelector('.theme-toggle');
 const themeIcon = document.querySelector('.theme-toggle__icon');
 let records = loadRecords();
+let allClientIds = [];
 let availableClientIds = [];
 let selectedClientIds = [];
+let clientDetailsById = new Map();
 
 function applyTheme(theme) {
   root.setAttribute('data-theme', theme);
@@ -140,12 +146,26 @@ function getContractIdFromRow(row) {
   return String(candidate ?? "").trim();
 }
 
+function registerClientDetails(row) {
+  const clientId = getClientIdFromRow(row);
+  if (!clientId) {
+    return;
+  }
+
+  clientDetailsById.set(clientId, {
+    clientId,
+    name: getClientNameFromRow(row),
+    contract: getContractIdFromRow(row),
+  });
+}
+
 function buildClientPool(rows) {
   const uniqueIds = new Set();
   rows.forEach((row) => {
     const clientId = getClientIdFromRow(row);
     if (clientId) {
       uniqueIds.add(clientId);
+      registerClientDetails(row);
     }
   });
   return [...uniqueIds];
@@ -170,22 +190,26 @@ function getClientDisplayLabel(row) {
   return parts.join(" • ");
 }
 
-function pickClientIds(amount) {
-  if (!availableClientIds.length) {
-    throw new Error("Importe uma planilha com IDs de clientes antes de sortear.");
-  }
-
+function pickClientIds(amount, noRepeat = true) {
   if (!Number.isInteger(amount) || amount < 1) {
     throw new Error("A quantidade precisa ser um número inteiro maior que zero.");
   }
 
-  const pool = [...availableClientIds];
+  const pool = noRepeat ? [...availableClientIds] : [...allClientIds];
+
+  if (!pool.length) {
+    throw new Error("Importe uma planilha com IDs de clientes antes de sortear.");
+  }
+
   const drawCount = Math.min(amount, pool.length);
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
   const selected = shuffled.slice(0, drawCount);
 
   selectedClientIds = [...selectedClientIds, ...selected];
-  availableClientIds = availableClientIds.filter((id) => !selected.includes(id));
+
+  if (noRepeat) {
+    availableClientIds = availableClientIds.filter((id) => !selected.includes(id));
+  }
 
   return selected;
 }
@@ -227,30 +251,88 @@ function renderRecords() {
     .join("");
 }
 
+function renderWinnerList(clients, focusedClientIds = []) {
+  if (!clients.length) {
+    winnerSection.classList.add("hidden");
+    winnerList.innerHTML = "";
+    return;
+  }
+
+  const focusedIds = new Set(focusedClientIds.map((id) => String(id)));
+  winnerSection.classList.remove("hidden");
+  winnerList.innerHTML = clients
+    .map((client) => {
+      const clientId = String(client.clientId ?? "");
+      const name = client.name || client.clientId || "Cliente";
+      const contract = client.contract ? `Contrato: ${client.contract}` : "Contrato não informado";
+      const isFocused = focusedIds.has(clientId);
+      const cardClass = isFocused ? "winner-card is-focused" : "winner-card is-blurred";
+
+      return `
+        <article class="${cardClass}">
+          <div class="winner-card__badge">🎉</div>
+          <div class="winner-card__content">
+            <p class="winner-card__label">Você foi premiado</p>
+            <h3>${name}</h3>
+            <p>${contract}</p>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
 function renderResult(record) {
   resultPanel.classList.remove("hidden");
   resultClientLabel.textContent = "Clientes sorteados";
   resultSummary.textContent = `${record.amount} cliente(s) selecionado(s) da planilha • ${record.noRepeat ? "sem repetição" : "permitindo repetição"}`;
   resultNumbers.innerHTML = "";
+  winnerList.innerHTML = "";
   resultNumbers.classList.add("is-animating");
 
-  const suspenseText = "•••";
-  const placeholder = document.createElement("span");
-  placeholder.className = "number-item";
-  placeholder.textContent = suspenseText;
+  const placeholder = document.createElement("div");
+  placeholder.className = "number-item is-loading";
+  placeholder.innerHTML = '<span class="spinner"></span>';
   resultNumbers.appendChild(placeholder);
 
-  const revealDelay = 5000;
-  const revealStep = 700;
+  const revealDelay = 2200;
+  const revealStep = 450;
 
   window.setTimeout(() => {
     resultNumbers.innerHTML = "";
+    const winnerClients = record.resultNumbers.map((number) => clientDetailsById.get(number) || { clientId: number, name: number, contract: "" });
+    renderWinnerList(winnerClients);
     record.resultNumbers.forEach((number, index) => {
       window.setTimeout(() => {
-        const badge = document.createElement("span");
-        badge.className = "number-item";
-        badge.textContent = number;
-        resultNumbers.appendChild(badge);
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "number-item flip-card";
+        card.dataset.clientId = String(number);
+        card.setAttribute("aria-label", `Cliente ${number}`);
+        card.innerHTML = `
+          <span class="flip-card__inner">
+            <span class="flip-card__face flip-card__face--front">Cliente</span>
+            <span class="flip-card__face flip-card__face--back">${number}</span>
+          </span>
+        `;
+        card.addEventListener("click", () => {
+          const isCurrentlyFlipped = card.classList.contains("is-flipped");
+          resultNumbers.querySelectorAll(".flip-card").forEach((item) => item.classList.remove("is-flipped"));
+          if (!isCurrentlyFlipped) {
+            card.classList.add("is-flipped");
+          }
+
+          const activeClientIds = Array.from(resultNumbers.querySelectorAll(".flip-card.is-flipped"))
+            .map((item) => item.dataset.clientId)
+            .filter(Boolean);
+          const clientId = number;
+          const clientData = clientDetailsById.get(clientId) || { clientId, name: clientId, contract: "" };
+          renderWinnerList(winnerClients, activeClientIds);
+          if (clientData.clientId && activeClientIds.includes(String(clientData.clientId))) {
+            showStatus(`Cliente ${clientData.clientId} em foco.`);
+          }
+        });
+        resultNumbers.appendChild(card);
       }, index * revealStep);
     });
     resultNumbers.classList.remove("is-animating");
@@ -259,13 +341,14 @@ function renderResult(record) {
 
 function createRecordFromForm() {
   const amount = Number.parseInt(amountInput.value, 10);
-  const resultNumbers = pickClientIds(amount);
+  const noRepeat = noRepeatInput?.checked ?? true;
+  const resultNumbers = pickClientIds(amount, noRepeat);
 
   return {
     clientId: resultNumbers.join(", "),
     amount: resultNumbers.length,
     source: "CSV importado",
-    noRepeat: true,
+    noRepeat,
     result: resultNumbers.join(" • "),
     resultNumbers,
   };
@@ -287,38 +370,16 @@ form.addEventListener("submit", (event) => {
 });
 
 exportButton.addEventListener("click", () => {
-  const headers = ["client_id", "amount", "source", "result"];
-  const csvRows = records.length
-    ? records.map((record) =>
-        headers
-          .map((header) => {
-            switch (header) {
-              case "client_id":
-                return record.clientId;
-              case "amount":
-                return record.amount;
-              case "source":
-                return record.source;
-              case "result":
-                return record.result;
-              default:
-                return "";
-            }
-          })
-          .map(escapeCsvValue)
-          .join(",")
-      )
-    : [headers.map(escapeCsvValue).join(",")];
-
-  const csvContent = [headers.map(escapeCsvValue).join(","), ...csvRows].join("\n");
+  const headers = ["client_id", "nome_completo", "id_contrato"];
+  const csvContent = headers.map(escapeCsvValue).join(",");
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = "netfacil-sorteios.csv";
+  anchor.download = "netfacil-modelo.csv";
   anchor.click();
   URL.revokeObjectURL(url);
-  showStatus("Planilha CSV exportada.");
+  showStatus("Modelo CSV exportado. Preencha e importe.");
 });
 
 csvInput.addEventListener("change", async (event) => {
@@ -342,6 +403,7 @@ csvInput.addEventListener("change", async (event) => {
     }
 
     const newPoolIds = importedClientIds.filter((id) => !selectedClientIds.includes(id));
+    allClientIds = [...new Set([...allClientIds, ...importedClientIds])];
     availableClientIds = [...new Set([...availableClientIds, ...newPoolIds])];
     records = [
       ...importedClientIds.map((clientId) => ({
@@ -366,6 +428,7 @@ csvInput.addEventListener("change", async (event) => {
 
 clearButton.addEventListener("click", () => {
   records = [];
+  allClientIds = [];
   availableClientIds = [];
   selectedClientIds = [];
   saveRecords();
@@ -377,6 +440,13 @@ infoToggle?.addEventListener("click", () => {
   const expanded = infoToggle.getAttribute("aria-expanded") === "true";
   infoToggle.setAttribute("aria-expanded", String(!expanded));
   heroInfo.hidden = expanded;
+});
+
+toolsToggle?.addEventListener("click", () => {
+  const isOpen = toolsPanel.hidden;
+  toolsPanel.hidden = !isOpen;
+  toolsToggle.setAttribute("aria-expanded", String(isOpen));
+  toolsToggle.classList.toggle("is-active", isOpen);
 });
 
 themeToggle?.addEventListener('click', () => {
