@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles/global.css" />
+    <link rel="stylesheet" href="styles/home.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@600&display=swap"
+      rel="stylesheet"
+    />
+    <title>Netfacil | Sorteador Inteligente</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="panel hero-card">
+        <div class="brand-block">
+          <img class="brand-logo" src="./assets/netfacil_logo.png" alt="Logo Netfacil" />
+          <div class="brand-copy">
+            <p class="eyebrow">Sorteio inteligente</p>
+            <h1>Netfacil</h1>
+          </div>
+          <div class="header-actions">
+            <button class="theme-toggle" type="button" aria-label="Alternar tema" title="Alternar tema">
+              <span class="theme-toggle__icon">☾</span>
+            </button>
+            <button class="info-toggle" type="button" aria-expanded="false" aria-controls="hero-info">
+              <span>i</span>
+            </button>
+          </div>
+        </div>
+        <div id="hero-info" class="hero-info" hidden>
+          <p>
+            Gere clientes a partir do ID da planilha, exporte uma lista em CSV,
+            preencha e envie de volta ao sistema, e mantenha tudo organizado em um
+            fluxo profissional para a operação da Netfacil.
+          </p>
+        </div>
+      </header>
+
+      <section class="panel panel-form">
+        <div class="panel-heading">
+          <p class="eyebrow">Configuração</p>
+          <h2>Sortear para um cliente</h2>
+        </div>
+
+        <form id="form-sort" class="form">
+          <div class="field-group">
+            <label for="amount">Quantidade de clientes</label>
+            <input id="amount" name="amount" type="number" min="1" value="5" required />
+          </div>
+
+          <p class="helper-text">
+            Os IDs serão extraídos da planilha importada. Cada cliente sorteado é removido da lista para não voltar a aparecer na próxima rodada.
+          </p>
+
+          <label class="toggle" for="no-repeat">
+            <input type="checkbox" id="no-repeat" name="no-repeat" checked />
+            <span>Sem repetição</span>
+          </label>
+
+          <div class="actions">
+            <button type="submit" class="btn btn-primary">Sortear</button>
+            <button type="button" id="btn-export-csv" class="btn btn-secondary">Exportar CSV</button>
+          </div>
+        </form>
+
+        <div class="csv-setup">
+          <label class="upload-card" for="csv-input">
+            <input id="csv-input" type="file" accept=".csv,text/csv" />
+            <span>Importar CSV preenchido</span>
+          </label>
+          <p id="status-message" class="status-message">Pronto para processar um novo lote.</p>
+        </div>
+      </section>
+
+      <section id="result-panel" class="panel panel-result hidden">
+        <div class="panel-heading">
+          <p class="eyebrow">Último sorteio</p>
+          <h2 id="result-client-label">Clientes sorteados</h2>
+        </div>
+        <p id="result-summary" class="result-summary"></p>
+        <div id="result-numbers" class="result-numbers"></div>
+      </section>
+
+      <section class="panel panel-records">
+        <div class="panel-heading records-heading">
+          <div>
+            <p class="eyebrow">Controle</p>
+            <h2>Registros salvos</h2>
+          </div>
+          <button type="button" id="btn-clear-list" class="btn btn-tertiary">Limpar</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Qtde.</th>
+                <th>Origem</th>
+                <th>Resultado</th>
+              </tr>
+            </thead>
+            <tbody id="records-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="./script.js" defer></script>
+  </body>
+</html>
